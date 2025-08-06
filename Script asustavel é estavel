@@ -1,0 +1,93 @@
+
+
+-- Serviços
+local Players = game:GetService("Players")
+local StarterGui = game:GetService("StarterGui")
+local player = Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local humanoid = char:WaitForChild("Humanoid")
+
+-- Configurações
+local NORMAL_SPEED = 16
+local SPEED_ATIVADO = 50
+
+local NORMAL_JUMP = 50
+local JUMP_ATIVADO = 150
+
+-- Estados
+local speedAtivo = false
+local puloAtivo = false
+
+-- Interface
+local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+screenGui.Name = "SpeedJumpUI"
+
+local frame = Instance.new("Frame", screenGui)
+frame.Size = UDim2.new(0, 200, 0, 130)
+frame.Position = UDim2.new(0, 10, 0.5, -65)
+frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+frame.BorderSizePixel = 0
+
+-- Título
+local titulo = Instance.new("TextLabel", frame)
+titulo.Size = UDim2.new(1, 0, 0, 30)
+titulo.Text = "Speed & Pulo"
+titulo.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+titulo.TextColor3 = Color3.fromRGB(255, 255, 255)
+titulo.Font = Enum.Font.SourceSansBold
+titulo.TextSize = 20
+
+-- Botões
+local function criarBotao(texto, posY)
+	local botao = Instance.new("TextButton", frame)
+	botao.Size = UDim2.new(1, -10, 0, 30)
+	botao.Position = UDim2.new(0, 5, 0, posY)
+	botao.Text = texto
+	botao.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+	botao.TextColor3 = Color3.fromRGB(255, 255, 255)
+	botao.Font = Enum.Font.SourceSans
+	botao.TextSize = 18
+	return botao
+end
+
+local botaoSpeed = criarBotao("Speed: OFF", 35)
+local botaoPulo = criarBotao("Super Pulo: OFF", 70)
+
+-- Funções
+local function aplicarSpeed()
+	humanoid.WalkSpeed = speedAtivo and SPEED_ATIVADO or NORMAL_SPEED
+end
+
+local function aplicarPulo()
+	humanoid.JumpPower = puloAtivo and JUMP_ATIVADO or NORMAL_JUMP
+end
+
+-- Anti-Ragdoll (manter WalkSpeed e JumpPower estáveis)
+humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+	if speedAtivo and humanoid.WalkSpeed ~= SPEED_ATIVADO then
+		humanoid.WalkSpeed = SPEED_ATIVADO
+	end
+end)
+
+humanoid:GetPropertyChangedSignal("JumpPower"):Connect(function()
+	if puloAtivo and humanoid.JumpPower ~= JUMP_ATIVADO then
+		humanoid.JumpPower = JUMP_ATIVADO
+	end
+end)
+
+-- Ações dos botões
+botaoSpeed.MouseButton1Click:Connect(function()
+	speedAtivo = not speedAtivo
+	botaoSpeed.Text = "Speed: " .. (speedAtivo and "ON" or "OFF")
+	aplicarSpeed()
+end)
+
+botaoPulo.MouseButton1Click:Connect(function()
+	puloAtivo = not puloAtivo
+	botaoPulo.Text = "Super Pulo: " .. (puloAtivo and "ON" or "OFF")
+	aplicarPulo()
+end)
+
+-- Inicial
+aplicarSpeed()
+aplicarPulo()
