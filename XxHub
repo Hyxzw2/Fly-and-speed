@@ -1,0 +1,148 @@
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local starterGui = game:GetService("StarterGui")
+
+local char = player.Character or player.CharacterAdded:Wait()
+local humanoid = char:WaitForChild("Humanoid")
+
+-- Interface Principal
+local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+screenGui.Name = "UltimateScriptUI"
+screenGui.ResetOnSpawn = false
+
+-- Botão de abrir/fechar
+local toggleButton = Instance.new("TextButton", screenGui)
+toggleButton.Size = UDim2.new(0, 100, 0, 30)
+toggleButton.Position = UDim2.new(0, 10, 0, 10)
+toggleButton.BackgroundColor3 = Color3.fromRGB(173, 216, 230) -- Azul bebê
+toggleButton.Text = "Menu"
+toggleButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+toggleButton.Font = Enum.Font.SourceSansBold
+toggleButton.TextSize = 20
+
+-- Menu Principal
+local frame = Instance.new("Frame", screenGui)
+frame.Size = UDim2.new(0, 300, 0, 300)
+frame.Position = UDim2.new(0, 10, 0, 50)
+frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+frame.Visible = true
+
+-- Título
+local titulo = Instance.new("TextLabel", frame)
+titulo.Size = UDim2.new(1, 0, 0, 30)
+titulo.Text = "Painel de Controles"
+titulo.TextColor3 = Color3.fromRGB(255, 255, 255)
+titulo.BackgroundTransparency = 1
+titulo.Font = Enum.Font.SourceSansBold
+titulo.TextSize = 20
+
+-- Funções
+local function criarBotao(nome, posY)
+	local botao = Instance.new("TextButton", frame)
+	botao.Size = UDim2.new(1, -20, 0, 30)
+	botao.Position = UDim2.new(0, 10, 0, posY)
+	botao.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	botao.TextColor3 = Color3.fromRGB(255, 255, 255)
+	botao.Font = Enum.Font.SourceSans
+	botao.TextSize = 18
+	botao.Text = nome
+	return botao
+end
+
+local function criarInput(nome, posY)
+	local input = Instance.new("TextBox", frame)
+	input.Size = UDim2.new(1, -20, 0, 30)
+	input.Position = UDim2.new(0, 10, 0, posY)
+	input.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+	input.TextColor3 = Color3.fromRGB(255, 255, 255)
+	input.PlaceholderText = nome
+	input.Font = Enum.Font.SourceSans
+	input.TextSize = 16
+	return input
+end
+
+-- Inputs para valores
+local speedInput = criarInput("Velocidade (padrão: 16)", 40)
+local jumpInput = criarInput("Pulo (padrão: 50)", 80)
+
+-- Botões
+local botaoSpeed = criarBotao("Ativar Speed", 120)
+local botaoPulo = criarBotao("Ativar Super Pulo", 160)
+local botaoESP = criarBotao("ESP: Desligado", 200)
+local corESPDropdown = criarInput("Cor do ESP (azul, preto, roxo, vermelho)", 240)
+
+-- Estados
+local speedAtivo = false
+local puloAtivo = false
+local espAtivo = false
+local espCor = Color3.fromRGB(0, 0, 255) -- azul padrão
+
+-- Função de proteção contra anti-cheat (redefine valores automaticamente)
+RunService.RenderStepped:Connect(function()
+	if speedAtivo then
+		humanoid.WalkSpeed = tonumber(speedInput.Text) or 16
+	end
+	if puloAtivo then
+		humanoid.JumpPower = tonumber(jumpInput.Text) or 50
+	end
+end)
+
+-- Função de ESP
+local function aplicarESP(ativar, cor)
+	for _, p in pairs(Players:GetPlayers()) do
+		if p ~= player and p.Character and p.Character:FindFirstChild("Head") then
+			if ativar then
+				if not p.Character.Head:FindFirstChild("ESPHighlight") then
+					local esp = Instance.new("BoxHandleAdornment")
+					esp.Name = "ESPHighlight"
+					esp.Adornee = p.Character
+					esp.AlwaysOnTop = true
+					esp.Size = Vector3.new(3, 6, 3)
+					esp.Color3 = cor
+					esp.ZIndex = 5
+					esp.Transparency = 0.5
+					esp.Parent = p.Character.Head
+				end
+			else
+				local old = p.Character.Head:FindFirstChild("ESPHighlight")
+				if old then
+					old:Destroy()
+				end
+			end
+		end
+	end
+end
+
+-- Botão de ativar/desativar Speed
+botaoSpeed.MouseButton1Click:Connect(function()
+	speedAtivo = not speedAtivo
+	botaoSpeed.Text = speedAtivo and "Desativar Speed" or "Ativar Speed"
+end)
+
+-- Botão de ativar/desativar Super Pulo
+botaoPulo.MouseButton1Click:Connect(function()
+	puloAtivo = not puloAtivo
+	botaoPulo.Text = puloAtivo and "Desativar Pulo" or "Ativar Super Pulo"
+end)
+
+-- Botão de ativar/desativar ESP
+botaoESP.MouseButton1Click:Connect(function()
+	espAtivo = not espAtivo
+	local texto = espAtivo and "ESP: Ligado" or "ESP: Desligado"
+	botaoESP.Text = texto
+
+	local corTexto = (corESPDropdown.Text or ""):lower()
+	if corTexto == "preto" then espCor = Color3.new(0, 0, 0)
+	elseif corTexto == "roxo" then espCor = Color3.fromRGB(128, 0, 128)
+	elseif corTexto == "vermelho" then espCor = Color3.fromRGB(255, 0, 0)
+	else espCor = Color3.fromRGB(0, 0, 255) end -- azul padrão
+
+	aplicarESP(espAtivo, espCor)
+end)
+
+-- Botão de abrir/fechar o menu
+toggleButton.MouseButton1Click:Connect(function()
+	frame.Visible = not frame.Visible
+end)
