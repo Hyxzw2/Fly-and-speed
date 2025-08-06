@@ -1,0 +1,86 @@
+
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local hum = char:WaitForChild("Humanoid")
+local UIS = game:GetService("UserInputService")
+
+-- GUI Setup
+local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+screenGui.Name = "FlySpeedGui"
+
+local mainFrame = Instance.new("Frame", screenGui)
+mainFrame.Size = UDim2.new(0, 200, 0, 150)
+mainFrame.Position = UDim2.new(0, 20, 0, 200)
+mainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+mainFrame.BorderSizePixel = 0
+
+local uicorner = Instance.new("UICorner", mainFrame)
+
+local flyButton = Instance.new("TextButton", mainFrame)
+flyButton.Size = UDim2.new(1, -20, 0, 40)
+flyButton.Position = UDim2.new(0, 10, 0, 10)
+flyButton.Text = "FLY [F]"
+flyButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+flyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+Instance.new("UICorner", flyButton)
+
+local speedButton = Instance.new("TextButton", mainFrame)
+speedButton.Size = UDim2.new(1, -20, 0, 40)
+speedButton.Position = UDim2.new(0, 10, 0, 60)
+speedButton.Text = "SPEED [T]"
+speedButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+speedButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+Instance.new("UICorner", speedButton)
+
+-- FLY Logic
+local flying = false
+local bv, bg
+
+function toggleFly()
+	flying = not flying
+	if flying then
+		char = player.Character
+		local hrp = char:WaitForChild("HumanoidRootPart")
+
+		bv = Instance.new("BodyVelocity", hrp)
+		bv.Velocity = Vector3.new(0,0,0)
+		bv.MaxForce = Vector3.new(1e5,1e5,1e5)
+
+		bg = Instance.new("BodyGyro", hrp)
+		bg.CFrame = hrp.CFrame
+		bg.MaxTorque = Vector3.new(1e5,1e5,1e5)
+	else
+		if bv then bv:Destroy() end
+		if bg then bg:Destroy() end
+	end
+end
+
+-- SPEED Logic
+local speedOn = false
+local normalWalkSpeed = hum.WalkSpeed
+local boostedSpeed = 100
+
+function toggleSpeed()
+	speedOn = not speedOn
+	if speedOn then
+		hum.WalkSpeed = boostedSpeed
+	else
+		hum.WalkSpeed = normalWalkSpeed
+	end
+end
+
+-- Keybinds
+UIS.InputBegan:Connect(function(input, processed)
+	if processed then return end
+	if input.KeyCode == Enum.KeyCode.F then
+		toggleFly()
+	elseif input.KeyCode == Enum.KeyCode.T then
+		toggleSpeed()
+	end
+end)
+
+-- Buttons
+flyButton.MouseButton1Click:Connect(toggleFly)
+speedButton.MouseButton1Click:Connect(toggleSpeed)
