@@ -1,0 +1,34 @@
+
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+-- Criando GUI
+local gui = script.Parent
+gui.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- vermelho
+gui.Draggable = true
+gui.Active = true
+
+-- Adicionando título WY
+local title = Instance.new("TextLabel", gui)
+title.Size = UDim2.new(1, 0, 0.2, 0)
+title.Text = "WY"
+title.TextColor3 = Color3.fromRGB(0, 0, 255) -- azul
+title.BackgroundTransparency = 1
+title.Font = Enum.Font.SourceSansBold
+title.TextScaled = true
+
+-- Botão para aumentar velocidade
+local button = Instance.new("TextButton", gui)
+button.Size = UDim2.new(1, 0, 0.3, 0)
+button.Position = UDim2.new(0, 0, 0.3, 0)
+button.Text = "Aumentar Velocidade"
+button.TextColor3 = Color3.fromRGB(0, 0, 0)
+button.Font = Enum.Font.SourceSansBold
+button.TextScaled = true
+button.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+
+-- Função para mudar velocidade
+button.MouseButton1Click:Connect(function()
+	humanoid.WalkSpeed = humanoid.WalkSpeed + 16
+end)
