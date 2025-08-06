@@ -1,0 +1,131 @@
+
+
+local Players = game:GetService("Players")
+local Local = Players.LocalPlayer
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local cam = workspace.CurrentCamera
+
+-- Configurações
+Local.CharacterAdded:Wait()
+local humanoid = Local.Character:WaitForChild("Humanoid")
+local hrp = Local.Character:WaitForChild("HumanoidRootPart")
+
+local SPEED = 80
+local flying = false
+local bv, bg
+
+-- GUI
+local gui = Instance.new("ScreenGui", Local:WaitForChild("PlayerGui"))
+gui.Name = "StealMapGui"
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 250, 0, 300)
+frame.Position = UDim2.new(0, 20, 0, 100)
+frame.BackgroundColor3 = Color3.fromRGB(10,10,10)
+frame.BorderSizePixel = 0
+Instance.new("UICorner", frame)
+
+-- Botões
+local btnFly = Instance.new("TextButton", frame)
+btnFly.Size = UDim2.new(1, -20, 0, 40)
+btnFly.Position = UDim2.new(0, 10, 0, 10)
+btnFly.Text = "FLY [F]"
+btnFly.BackgroundColor3 = Color3.fromRGB(200,0,0)
+btnFly.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", btnFly)
+
+local btnSpeed = Instance.new("TextButton", frame)
+btnSpeed.Size = UDim2.new(1, -20, 0, 40)
+btnSpeed.Position = UDim2.new(0, 10, 0, 60)
+btnSpeed.Text = "SPEED = 80 [T]"
+btnSpeed.BackgroundColor3 = Color3.fromRGB(200,0,0)
+btnSpeed.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", btnSpeed)
+
+local btnMap = Instance.new("TextButton", frame)
+btnMap.Size = UDim2.new(1, -20, 0, 40)
+btnMap.Position = UDim2.new(0, 10, 0, 110)
+btnMap.Text = "TOGGLE MAP [M]"
+btnMap.BackgroundColor3 = Color3.fromRGB(200,0,0)
+btnMap.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", btnMap)
+
+-- Fly logic com anti-stuck simples
+function toggleFly()
+    flying = not flying
+    if flying then
+        bv = Instance.new("BodyVelocity", hrp)
+        bv.MaxForce = Vector3.new(1e5,1e5,1e5)
+        bg = Instance.new("BodyGyro", hrp)
+        bg.MaxTorque = Vector3.new(1e5,1e5,1e5)
+        RunService:BindToRenderStep("FlyStep", Enum.RenderPriority.Input.Value, function()
+            local dir = Vector3.new()
+            if UIS:IsKeyDown(Enum.KeyCode.W) then dir = dir + cam.CFrame.LookVector end
+            if UIS:IsKeyDown(Enum.KeyCode.S) then dir = dir - cam.CFrame.LookVector end
+            if UIS:IsKeyDown(Enum.KeyCode.A) then dir = dir - cam.CFrame.RightVector end
+            if UIS:IsKeyDown(Enum.KeyCode.D) then dir = dir + cam.CFrame.RightVector end
+            bv.Velocity = dir.Unit * SPEED
+            bg.CFrame = cam.CFrame
+        end)
+    else
+        if bv then bv:Destroy() end
+        if bg then bg:Destroy() end
+        RunService:UnbindFromRenderStep("FlyStep")
+    end
+end
+
+-- Speed logic
+local speedOn = false
+local normalSpeed = humanoid.WalkSpeed
+function toggleSpeed()
+    speedOn = not speedOn
+    if speedOn then humanoid.WalkSpeed = SPEED
+    else humanoid.WalkSpeed = normalSpeed end
+end
+
+-- Mapa de jogadores e timers de base
+local mapActive = false
+local mapFrame
+function toggleMap()
+    mapActive = not mapActive
+    if mapActive then
+        mapFrame = Instance.new("Frame", frame)
+        mapFrame.Size = UDim2.new(1, -20, 0, 120)
+        mapFrame.Position = UDim2.new(0, 10, 0, 160)
+        mapFrame.BackgroundTransparency = 0.3
+        mapFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+        local u = Instance.new("UIListLayout", mapFrame)
+        
+        -- Atualiza mapa a cada segundo
+        spawn(function()
+            while mapActive do
+                mapFrame:ClearAllChildren()
+                for _, pl in ipairs(Players:GetPlayers()) do
+                    if pl ~= Local and pl.Character and pl.Character:FindFirstChild("HumanoidRootPart") then
+                        local dot = Instance.new("TextLabel", mapFrame)
+                        dot.Size = UDim2.new(1, -10, 0, 20)
+                        dot.Text = string.format("%s → Base: %s (%.1fs)", pl.Name,
+                            pl.Team and pl.Team.Name or "Unknown",
+                            math.random(10,60)) -- placeholder tempo base
+                        dot.TextColor3 = Color3.fromRGB(200,0,0)
+                        dot.BackgroundTransparency = 1
+                    end
+                end
+                wait(1)
+            end
+        end)
+    else
+        if mapFrame then mapFrame:Destroy() end
+    end
+end
+
+-- Conexões de botão e teclado
+btnFly.MouseButton1Click:Connect(toggleFly)
+btnSpeed.MouseButton1Click:Connect(toggleSpeed)
+btnMap.MouseButton1Click:Connect(toggleMap)
+UIS.InputBegan:Connect(function(inp)
+    if inp.KeyCode == Enum.KeyCode.F then toggleFly()
+    elseif inp.KeyCode == Enum.KeyCode.T then toggleSpeed()
+    elseif inp.KeyCode == Enum.KeyCode.M then toggleMap() end
+end)
