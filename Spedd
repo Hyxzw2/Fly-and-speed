@@ -1,0 +1,53 @@
+
+
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local gui = script.Parent
+
+-- Interface visual
+gui.BackgroundColor3 = Color3.fromRGB(30, 0, 0) -- vermelho escuro
+gui.BorderSizePixel = 2
+gui.BorderColor3 = Color3.fromRGB(255, 0, 0) -- vermelho borda
+gui.Size = UDim2.new(0, 300, 0, 150)
+gui.Position = UDim2.new(0.3, 0, 0.3, 0)
+gui.Active = true
+gui.Draggable = true
+
+-- Título
+local title = Instance.new("TextLabel", gui)
+title.Size = UDim2.new(1, 0, 0.25, 0)
+title.Text = "ie hit rubi"
+title.TextColor3 = Color3.fromRGB(255, 0, 0)
+title.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+title.Font = Enum.Font.GothamBold
+title.TextScaled = true
+
+-- Botão de aumentar velocidade
+local upSpeed = Instance.new("TextButton", gui)
+upSpeed.Size = UDim2.new(0.9, 0, 0.25, 0)
+upSpeed.Position = UDim2.new(0.05, 0, 0.3, 0)
+upSpeed.Text = "Aumentar Velocidade"
+upSpeed.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+upSpeed.TextColor3 = Color3.fromRGB(0, 0, 0)
+upSpeed.Font = Enum.Font.Gotham
+upSpeed.TextScaled = true
+
+-- Botão de diminuir velocidade
+local downSpeed = Instance.new("TextButton", gui)
+downSpeed.Size = UDim2.new(0.9, 0, 0.25, 0)
+downSpeed.Position = UDim2.new(0.05, 0, 0.6, 0)
+downSpeed.Text = "Diminuir Velocidade"
+downSpeed.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+downSpeed.TextColor3 = Color3.fromRGB(255, 255, 255)
+downSpeed.Font = Enum.Font.Gotham
+downSpeed.TextScaled = true
+
+-- Ações
+upSpeed.MouseButton1Click:Connect(function()
+	humanoid.WalkSpeed = humanoid.WalkSpeed + 8
+end)
+
+downSpeed.MouseButton1Click:Connect(function()
+	humanoid.WalkSpeed = math.max(8, humanoid.WalkSpeed - 8)
+end)
