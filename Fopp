@@ -1,0 +1,1 @@
+loadstring(game:HttpGet("https://raw.githubusercontent.com/SeuUsuarioHY/HYHUB/main/HY_HUB_COMPLETO.lua"))()
